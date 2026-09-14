@@ -5,11 +5,11 @@
  
   tasks:
     - name: Show Version
-    cisco.ios.ios_command:
-      commands:
-        - show version
-    register: result
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: result
  
-  - name: Ausgabe
-    debug:
-      var: result.stdout
+    - name: Ausgabe
+      debug:
+        var: result.stdout
