@@ -1,0 +1,9 @@
+    - name: VLAN Übersicht anzeigen
+      ansible.builtin.debug:
+        msg: "{{ item }}"
+      loop: >-
+        {{
+          result.stdout_lines[0]
+          | select('match', '^[0-9]+')
+          | list
+        }}
