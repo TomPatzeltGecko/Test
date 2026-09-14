@@ -1,0 +1,145 @@
+---
+- name: VLANs auf Cisco Switches anlegen
+  hosts: cisco_switches
+  gather_facts: false
+
+  vars:
+    ansible_command_timeout: 120
+
+    cisco_vlans:
+      - vlan_id: 2
+        name: CoCo
+
+      - vlan_id: 3
+        name: tmp
+
+      - vlan_id: 9
+        name: Transfer-Fan-WLAN
+
+      - vlan_id: 10
+        name: Transfer-MPLS
+
+      - vlan_id: 28
+        name: Karls-Meraki-Gaeste
+
+      - vlan_id: 32
+        name: Karls-Fernseher
+
+      - vlan_id: 130
+        name: altes-DHCP
+
+      - vlan_id: 131
+        name: 192.168.131.0
+
+      - vlan_id: 132
+        name: 192.168.132.0
+
+      - vlan_id: 135
+        name: 192.168.135.0
+
+      - vlan_id: 140
+        name: 192.168.140.0
+
+      - vlan_id: 150
+        name: 192.168.150.0
+
+      - vlan_id: 151
+        name: 192.168.151.0
+
+      - vlan_id: 152
+        name: 192.168.152.0
+
+      - vlan_id: 153
+        name: 192.168.153.0
+
+      - vlan_id: 154
+        name: 192.168.154.0
+
+      - vlan_id: 155
+        name: 192.168.155.0
+
+      - vlan_id: 200
+        name: iSCSI-A
+
+      - vlan_id: 210
+        name: iSCSI-B
+
+      - vlan_id: 510
+        name: NVMEoF
+
+      - vlan_id: 520
+        name: IT-Infrastruktur
+
+      - vlan_id: 530
+        name: Management-VMware
+
+      - vlan_id: 540
+        name: Backup-Infrastruktur
+
+      - vlan_id: 1004
+        name: ROEV-Management
+
+      - vlan_id: 1008
+        name: ROEV-Gaeste
+
+      - vlan_id: 1010
+        name: ROEV-Camp
+
+      - vlan_id: 1012
+        name: ROEV-Kassen
+
+      - vlan_id: 1016
+        name: Clients-Prod
+
+      - vlan_id: 1028
+        name: FAN
+
+      - vlan_id: 1032
+        name: Dante-Audio
+
+      - vlan_id: 1050
+        name: ROEV-PUBLIC-WLAN
+
+      - vlan_id: 1401
+        name: GLR
+
+      - vlan_id: 1752
+        name: WiFi-Paletti
+
+  tasks:
+    - name: Aktuelle VLAN-Konfiguration sichern
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
+      register: vlan_status_before
+
+    - name: VLANs anlegen oder Namen aktualisieren
+      cisco.ios.ios_vlans:
+        config: "{{ cisco_vlans }}"
+        state: merged
+      register: vlan_changes
+
+    - name: Konfiguration speichern
+      cisco.ios.ios_config:
+        save_when: modified
+      when: vlan_changes.changed
+
+    - name: VLAN-Konfiguration kontrollieren
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
+      register: vlan_status_after
+
+    - name: Ergebnis anzeigen
+      ansible.builtin.debug:
+        msg:
+          - "===================================="
+          - "Switch: {{ inventory_hostname }}"
+          - "IP: {{ ansible_host | default(inventory_hostname) }}"
+          - "VLAN-Konfiguration geändert: {{ vlan_changes.changed }}"
+          - "Konfiguration gespeichert: {{ vlan_changes.changed }}"
+          - "===================================="
+
+    - name: VLAN-Uebersicht anzeigen
+      ansible.builtin.debug:
+        var: vlan_status_after.stdout_lines[0]
