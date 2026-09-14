@@ -1,0 +1,26 @@
+---
+- name: Cisco Trunk Übersicht
+  hosts: cisco_switches
+  gather_facts: false
+
+  vars:
+    ansible_command_timeout: 120
+
+  tasks:
+    - name: Trunk Informationen auslesen
+      cisco.ios.ios_command:
+        commands:
+          - show interfaces trunk
+      register: result
+
+    - name: Header anzeigen
+      ansible.builtin.debug:
+        msg:
+          - "===================================="
+          - "Switch: {{ inventory_hostname }}"
+          - "IP: {{ ansible_host }}"
+          - "===================================="
+
+    - name: Trunk Ausgabe anzeigen
+      ansible.builtin.debug:
+        var: result.stdout_lines[0]
