@@ -4,12 +4,12 @@ hosts: cisco_switches
 gather_facts: no
  
 tasks:
-- name: Show Version
-cisco.ios.ios_command:
-commands:
-- show version
+  - name: Show Version
+  cisco.ios.ios_command:
+    commands:
+      - show version
 register: result
  
 - name: Ausgabe
-debug:
-var: result.stdout
+  debug:
+    var: result.stdout
