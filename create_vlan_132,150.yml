@@ -1,0 +1,53 @@
+---
+- name: VLAN 132 und 150 auf Cisco Switches anlegen
+  hosts: cisco_switches
+  gather_facts: false
+
+  vars:
+    ansible_command_timeout: 120
+
+    cisco_vlans:
+      - vlan_id: 132
+        name: 192.168.132.0
+
+      - vlan_id: 150
+        name: 192.168.150.0
+
+  tasks:
+    - name: VLANs anlegen oder Namen aktualisieren
+      cisco.ios.ios_vlans:
+        config: "{{ cisco_vlans }}"
+        state: merged
+      register: vlan_changes
+
+    - name: Konfiguration speichern
+      cisco.ios.ios_config:
+        save_when: modified
+      when: vlan_changes.changed
+
+    - name: VLAN-Konfiguration kontrollieren
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
+      register: vlan_status
+
+    - name: Ergebnis anzeigen
+      ansible.builtin.debug:
+        msg:
+          - "===================================="
+          - "Switch: {{ inventory_hostname }}"
+          - "IP: {{ ansible_host | default(inventory_hostname) }}"
+          - "VLAN-Konfiguration geändert: {{ vlan_changes.changed }}"
+          - "===================================="
+
+    - name: VLAN 132 und 150 anzeigen
+      ansible.builtin.debug:
+        msg: "{{ item }}"
+      loop: >-
+        {{
+          vlan_status.stdout_lines[0]
+          | select('match', '^(132|150)\s+')
+          | list
+        }}
+      loop_control:
+        label: "VLAN {{ item.split()[0] }}"
