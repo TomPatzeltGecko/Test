@@ -1,9 +1,34 @@
+---
+- name: Cisco VLAN Übersicht
+  hosts: cisco_switches
+  gather_facts: false
+
+  vars:
+    ansible_command_timeout: 120
+
+  tasks:
+    - name: VLAN Informationen auslesen
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
+      register: result
+
+    - name: Header anzeigen
+      ansible.builtin.debug:
+        msg:
+          - "===================================="
+          - "Switch: {{ inventory_hostname }}"
+          - "IP: {{ ansible_host | default(inventory_hostname) }}"
+          - "===================================="
+
     - name: VLAN Übersicht anzeigen
       ansible.builtin.debug:
-        msg: "{{ item }}"
+        msg: "VLAN {{ '%-5s' | format(item.split()[0]) }} {{ item.split()[1] }}"
       loop: >-
         {{
           result.stdout_lines[0]
           | select('match', '^[0-9]+')
           | list
         }}
+      loop_control:
+        label: "VLAN {{ item.split()[0] }}"
