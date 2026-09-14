@@ -10,5 +10,6 @@ commands:
 - show version
 register: result
  
-- debug:
+- name: Ausgabe
+debug:
 var: result.stdout
