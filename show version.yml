@@ -1,15 +1,13 @@
 ---
-- name: Cisco Test
-  hosts: cisco_switches
+- hosts: ios_routers
   gather_facts: false
- 
+  connection: local
+
   tasks:
-    - name: Show Version
-      cisco.ios.ios_command:
-        commands:
-          - show version
-        register: result
- 
-    - name: Ausgabe
-      debug:
-        var: result.stdout_lines
+   - name: run show version on ios device
+     ios_command:
+       commands:
+         - show version
+       host: "{{ inventory_hostname }}"
+       username: admin
+       password: 123
