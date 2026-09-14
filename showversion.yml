@@ -1,0 +1,15 @@
+---
+- name: Cisco Test
+  hosts: cisco_switches
+  gather_facts: false
+
+  tasks:
+    - name: Show Version
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: result
+
+    - name: Ausgabe
+      debug:
+        var: result.stdout_lines
